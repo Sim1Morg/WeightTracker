@@ -1,4 +1,3 @@
-
 //
 //  Persistence.swift
 //  Weight Tracker
