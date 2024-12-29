@@ -3,7 +3,7 @@ import SwiftUI
 struct CalendarView: View {
     @Binding var selectedDate: Date?
     @State private var currentDate = Date()
-    
+
     var body: some View {
         VStack {
             CalendarHeaderView(currentDate: $currentDate)
@@ -14,7 +14,7 @@ struct CalendarView: View {
 
 struct CalendarHeaderView: View {
     @Binding var currentDate: Date
-    
+
     var body: some View {
         HStack {
             Button(action: {
@@ -24,6 +24,7 @@ struct CalendarHeaderView: View {
             }
             Spacer()
             Text(currentDate, formatter: DateFormatter.monthYearFormatter)
+                .font(.headline)
             Spacer()
             Button(action: {
                 currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
@@ -39,15 +40,16 @@ struct CalendarHeaderView: View {
 struct CalendarGridView: View {
     @Binding var currentDate: Date
     @Binding var selectedDate: Date?
-    
+
     let daysInWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    
+
     var body: some View {
         VStack {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
                 ForEach(daysInWeek, id: \.self) { day in
                     Text(day)
                         .fontWeight(.bold)
+                        .frame(maxWidth: .infinity)
                 }
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7)) {
@@ -58,30 +60,28 @@ struct CalendarGridView: View {
                         let day = index - firstDayOfMonthWeekday() + 2
                         let date = getDateForDay(day: day)
                         CalendarDayView(day: day, date: date, selectedDate: $selectedDate)
-                        
                     }
                 }
             }
-            
         }
         .padding(.horizontal)
     }
-    
-    func numberOfDaysInMonth() -> Int {
+
+    private func numberOfDaysInMonth() -> Int {
         let calendar = Calendar.current
         let range = calendar.range(of: .day, in: .month, for: currentDate)
         return range?.count ?? 0
     }
-    
-    func firstDayOfMonthWeekday() -> Int {
+
+    private func firstDayOfMonthWeekday() -> Int {
         let calendar = Calendar.current
         var components = calendar.dateComponents([.year, .month], from: currentDate)
         components.day = 1
         let firstDayOfMonth = calendar.date(from: components)
-        return calendar.component(.weekday, from: firstDayOfMonth!)
+        return calendar.component(.weekday, from: firstDayOfMonth ?? Date())
     }
-    
-    func getDateForDay(day: Int) -> Date {
+
+    private func getDateForDay(day: Int) -> Date {
         let calendar = Calendar.current
         var components = calendar.dateComponents([.year, .month], from: currentDate)
         components.day = day
@@ -94,34 +94,31 @@ struct CalendarDayView: View {
     let date: Date
     @Binding var selectedDate: Date?
     @EnvironmentObject var dataManager: DataManager
-    
+
     var body: some View {
         Button(action: {
             selectedDate = date
         }) {
             ZStack {
-                if let selectedDate = selectedDate {
-                    if Calendar.current.isDate(selectedDate, inSameDayAs: date) {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.blue.opacity(0.3))
-                            .frame(width: 40, height: 40)
-                    }
+                if let selectedDate = selectedDate,
+                   Calendar.current.isDate(selectedDate, inSameDayAs: date) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.blue.opacity(0.3))
+                        .frame(width: 40, height: 40)
                 }
-               if dataManager.getEntry(for: date) != nil {
+                if dataManager.getEntry(for: date) != nil {
                     Circle()
                         .fill(Color.green.opacity(0.3))
                         .frame(width: 5, height: 5)
-                        .offset(x:15, y:-15)
-               }
-
-               Text("\(day)")
-                   .foregroundColor(.primary)
+                        .offset(x: 15, y: -15)
+                }
+                Text("\(day)")
+                    .foregroundColor(.primary)
             }
             .frame(width: 40, height: 40)
         }
     }
 }
-
 
 extension DateFormatter {
     static let monthYearFormatter: DateFormatter = {
@@ -130,3 +127,4 @@ extension DateFormatter {
         return formatter
     }()
 }
+

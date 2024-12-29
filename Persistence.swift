@@ -1,8 +1,9 @@
+
 //
 //  Persistence.swift
 //  Weight Tracker
 //
-//  Created by Simone Morgillo on 28/12/2024.
+//  Created by Simone Morgillo on 27/12/2024.
 //
 
 import CoreData
@@ -10,8 +11,7 @@ import CoreData
 struct PersistenceController {
     static let shared = PersistenceController()
 
-    @MainActor
-    static let preview: PersistenceController = {
+    static var preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
         for _ in 0..<10 {

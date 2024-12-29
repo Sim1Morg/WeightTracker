@@ -1,46 +1,46 @@
 import SwiftUI
 
-struct DataEntryView: View {
-    @Environment(\.dismiss) var dismiss
-    @State private var weight: String = ""
-    @State private var bodyFat: String = ""
-    @State private var muscleMass: String = ""
-    @State private var visceralFat: String = ""
-    @State private var image: Image? = nil
-    @State private var inputImage: UIImage? = nil
-    @State private var showingImagePicker = false
-    @State private var weightUnit: WeightUnit = .kg
-    @State var entry: Entry? = nil
-    @EnvironmentObject var dataManager: DataManager
-    @State private var editingMode: Bool = false
+struct EditEntryView: View {
+    @Environment(\.dismiss) var Dismiss
+    @State private var Weight: String = ""
+    @State private var BodyFat: String = ""
+    @State private var MuscleMass: String = ""
+    @State private var VisceralFat: String = ""
+    @State private var Image: Image? = nil
+    @State private var InputImage: UIImage? = nil
+    @State private var ShowingImagePicker = false
+    @State private var WeightUnit: WeightUnit = .kg
+    @State var Entry: Entry? = nil
+    @EnvironmentObject var DataManager: DataManager
+    @State private var EditingMode: Bool = false
 
     var body: some View {
         NavigationView{
             Form {
                 Section(header: Text("Weight")) {
-                    TextField("Weight", text: $weight)
+                    TextField("Weight", text: $Weight)
                         .keyboardType(.decimalPad)
-                    Picker("Unit", selection: $weightUnit) {
+                    Picker("Unit", selection: $WeightUnit) {
                         ForEach(WeightUnit.allCases, id: \.self) { unit in
                             Text(unit.rawValue)
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
                 }
-                
+
                 Section(header: Text("Body Metrics")) {
-                    TextField("Body Fat %", text: $bodyFat)
+                    TextField("Body Fat %", text: $BodyFat)
                         .keyboardType(.decimalPad)
-                    TextField("Muscle Mass %", text: $muscleMass)
+                    TextField("Muscle Mass %", text: $MuscleMass)
                         .keyboardType(.decimalPad)
-                    TextField("Visceral Fat", text: $visceralFat)
+                    TextField("Visceral Fat", text: $VisceralFat)
                         .keyboardType(.numberPad)
                 }
-                
+
                 Section(header: Text("Photo")) {
                     HStack {
-                        if let image = image {
-                            image
+                        if let Image = Image {
+                            Image
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 100, height: 100)
@@ -48,103 +48,103 @@ struct DataEntryView: View {
                             Text("No image selected")
                         }
                     }
-                    
+
                     Button("Select Photo") {
-                        showingImagePicker = true
+                        ShowingImagePicker = true
                     }
                 }
-                
+
                 Button("Save") {
-                    saveEntry()
-                    dismiss()
+                    SaveEntry()
+                    Dismiss()
                 }
             }
-            .navigationTitle(editingMode ? "Edit Entry" : "Add Entry")
-            .sheet(isPresented: $showingImagePicker, onDismiss: loadImage) {
-                ImagePicker(image: $inputImage)
+            .navigationTitle(EditingMode ? "Edit Entry" : "Add Entry")
+            .sheet(isPresented: $ShowingImagePicker, onDismiss: LoadImage) {
+                ImagePicker(Image: $InputImage)
             }
             .onAppear {
-                loadData()
+                LoadData()
             }
         }
     }
 
     // New Initializer for Editing
-    init(entry: Entry? = nil, editingMode: Bool = false) {
-        _entry = State(initialValue: entry)
-        _editingMode = State(initialValue: editingMode)
+    init(Entry: Entry? = nil, EditingMode: Bool = false) {
+        _Entry = State(initialValue: Entry)
+        _EditingMode = State(initialValue: EditingMode)
     }
-    
-    func loadData() {
-        guard let entry = entry else { return }
-        weight = String(entry.weight)
-        bodyFat = String(entry.bodyFat)
-        muscleMass = String(entry.muscleMass)
-        visceralFat = String(entry.visceralFat)
-        weightUnit = entry.weightUnit
-        if let entryImage = entry.image {
-            image = Image(uiImage: entryImage)
+
+    func LoadData() {
+        guard let Entry = Entry else { return }
+        Weight = String(Entry.Weight)
+        BodyFat = String(Entry.BodyFat)
+        MuscleMass = String(Entry.MuscleMass)
+        VisceralFat = String(Entry.VisceralFat)
+        WeightUnit = Entry.WeightUnit
+        if let EntryImage = Entry.Image {
+            Image = SwiftUI.Image(uiImage: EntryImage)
         }
     }
-    
-    func loadImage() {
-        guard let inputImage = inputImage else { return }
-        image = Image(uiImage: inputImage)
+
+    func LoadImage() {
+        guard let InputImage = InputImage else { return }
+        Image = SwiftUI.Image(uiImage: InputImage)
     }
-    
-    func saveEntry() {
-        guard let weightValue = Double(weight),
-              let bodyFatValue = Double(bodyFat),
-              let muscleMassValue = Double(muscleMass),
-              let visceralFatValue = Int(visceralFat) else {
+
+    func SaveEntry() {
+        guard let WeightValue = Double(Weight),
+              let BodyFatValue = Double(BodyFat),
+              let MuscleMassValue = Double(MuscleMass),
+              let VisceralFatValue = Int(VisceralFat) else {
             return
         }
-        let newEntry = Entry(
-            date: entry?.date ?? Date(), //if creating an entry, use current date, else use existing entry date
-            weight: weightValue,
-            bodyFat: bodyFatValue,
-            muscleMass: muscleMassValue,
-            visceralFat: visceralFatValue,
-            weightUnit: weightUnit,
-            image: inputImage
+        let NewEntry = Entry(
+            Date: Entry?.Date ?? Date(), //if creating an entry, use current date, else use existing entry date
+            Weight: WeightValue,
+            BodyFat: BodyFatValue,
+            MuscleMass: MuscleMassValue,
+            VisceralFat: VisceralFatValue,
+            WeightUnit: WeightUnit,
+            Image: InputImage
         )
-        if editingMode {
-            dataManager.updateEntry(entry: entry!, updatedEntry: newEntry)
+        if EditingMode {
+            DataManager.UpdateEntry(Entry: Entry!, UpdatedEntry: NewEntry)
         } else {
-            dataManager.addEntry(entry: newEntry)
+            DataManager.AddEntry(Entry: NewEntry)
         }
     }
 }
 
 struct ImagePicker: UIViewControllerRepresentable {
-    @Binding var image: UIImage?
-    
+    @Binding var Image: UIImage?
+
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         return picker
     }
-    
+
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
-        
+
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-    
+
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let parent: ImagePicker
-        
+
         init(_ parent: ImagePicker) {
             self.parent = parent
         }
-        
+
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
             if let uiImage = info[.originalImage] as? UIImage {
-                parent.image = uiImage
+                parent.Image = uiImage
             }
-            
+
             picker.dismiss(animated: true)
         }
     }
